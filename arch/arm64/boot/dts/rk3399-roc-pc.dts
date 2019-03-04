@@ -92,7 +92,8 @@
 		rockchip,signal-irq = <182>;
 		rockchip,wake-irq = <0>;
 		rockchip,irq-mode-enable = <1>;
-		rockchip,baudrate = <1500000>;
+		//rockchip,baudrate = <1500000>;
+		rockchip,baudrate = <115200>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&uart2c_xfer>;
 	};
