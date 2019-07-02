@@ -254,12 +254,12 @@
 		};
 		
                 cpu {
-                        label = "firefly:yellow:cpu";
-                        linux,default-trigger = "cpu";
+                        label = "firefly:yellow:heartbeat";
+                        linux,default-trigger = "heartbeat";
                         default-state = "on";
                         gpios = <&gpio2 27 GPIO_ACTIVE_HIGH>;
                         pinctrl-names = "default";
-                        pinctrl-0 = <&led_user>;
+                        pinctrl-0 = <&led_cpu>;
                 };
 
 		user {
@@ -277,32 +277,33 @@
 		#address-cells = <1>;
 		#size-cells = <0>;
 		autorepeat;
-
 		pinctrl-names = "default";
 		pinctrl-0 = <&pwrbtn>;
 
-		button@0 {
-			gpios = <&gpio0 5 GPIO_ACTIVE_LOW>;
-			linux,code = <KEY_POWER>;
-			label = "GPIO Key Power";
-			linux,input-type = <1>;
-			gpio-key,wakeup = <1>;
-			debounce-interval = <100>;
-		};
-	};
-
-	usb-charge {
-		compatible = "usb-ext-charge";
-		status = "disabled";
-		io-channels = <&saradc 0>;
-		extcon = <&fusb0>;
-		pinctrl-names = "default";
-		pinctrl-0 = <&vcc_chargen_h &bat_int_h &cur_ctl_h>;
-		bat-int = <&gpio2 28 IRQ_TYPE_EDGE_RISING>;
-		charge-en-gpios = <&gpio0 1 GPIO_ACTIVE_HIGH>;
-		cur-ctl-gpios = <&gpio3 26 GPIO_ACTIVE_HIGH>;
-		poe-state-gpios = <&gpio0 12 GPIO_ACTIVE_HIGH>;
-		//cap-led-gpios = <&gpio0 13 GPIO_ACTIVE_HIGH>;
+	        button@0 {
+                        gpios = <&gpio0 5 GPIO_ACTIVE_LOW>;
+                        linux,code = <KEY_POWER>;
+                        gpio-key,wakeup = <1>;
+                        debounce-interval = <100>;
+                };
+		 button@1 {
+                        gpios = <&gpio2 22 GPIO_ACTIVE_LOW>;
+                        linux,code = <KEY_UP>;
+                        debounce-interval = <100>;
+                        gpio-key,wakeup = <1>;
+                };
+                button@2 {
+                        gpios = <&gpio2 25 GPIO_ACTIVE_LOW>;
+                        linux,code = <KEY_DOWN>;
+                        gpio-key,wakeup = <1>;
+                        debounce-interval = <100>;
+                };
+                button@3 {
+                        gpios = <&gpio0 10 GPIO_ACTIVE_LOW>;
+                        linux,code = <KEY_RIGHT>;
+                        gpio-key,wakeup = <1>;
+                        debounce-interval = <100>;
+                };
 	};
 
 
@@ -848,7 +849,7 @@
 	       led_cpu: led-cpu {
                        rockchip,pins =
                        <2 27 RK_FUNC_GPIO &pcfg_pull_none>;
-                       }
+                       };
         };
 
 	pmic {
@@ -901,10 +902,13 @@
 	};
 	
 	buttons {
-		pwrbtn: pwrbtn {
-			rockchip,pins = <0 5 RK_FUNC_GPIO &pcfg_pull_up>;
-		};
-	};
+                pwrbtn: pwrbtn {
+                        rockchip,pins = <0 5  RK_FUNC_GPIO &pcfg_pull_up>,
+                        	        <2 22 RK_FUNC_GPIO &pcfg_pull_up>,
+                        	        <2 25 RK_FUNC_GPIO &pcfg_pull_up>,
+                        	        <0 10 RK_FUNC_GPIO &pcfg_pull_up>;
+                };
+        };
 
 	chargen {
 		vcc_chargen_h: vcc-chargen-h {
@@ -1104,6 +1108,12 @@
 	status = "okay";
 };
 
+&uart4 {
+	
+	pinctrl-names = "default";
+        status = "okay";
+};
+
 &usbdrd3_0 {
 	status = "okay";
 	extcon = <&fusb0>;
@@ -1116,11 +1126,12 @@
 
 &usbdrd_dwc3_0 {
 	status = "okay";
+	dr_mode = "host";
 };
 
 &usbdrd_dwc3_1 {
 	status = "okay";
-	dr_mode = "host";
+	dr_mode = "otg";
 };
 
 &usb_host0_ehci {
