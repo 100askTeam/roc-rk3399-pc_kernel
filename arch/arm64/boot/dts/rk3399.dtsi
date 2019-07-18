@@ -735,7 +735,7 @@
 		clock-names = "spiclk", "apb_pclk";
 		interrupts = <GIC_SPI 52 IRQ_TYPE_LEVEL_HIGH 0>;
 		pinctrl-names = "default";
-		pinctrl-0 = <&spi2_clk &spi2_tx &spi2_rx &spi2_cs0>;
+		pinctrl-0 = <&spi2_clk &spi2_tx &spi2_rx &spi2_cs0 &spi2_cs1>;
 		#address-cells = <1>;
 		#size-cells = <0>;
 		status = "disabled";
@@ -2688,6 +2688,10 @@
 			spi2_cs0: spi2-cs0 {
 				rockchip,pins =
 					<2 12 RK_FUNC_1 &pcfg_pull_up>;
+			};
+			spi2_cs1: spi2-cs1 {
+				rockchip,pins =
+				        <3 29 RK_FUNC_GPIO &pcfg_pull_up>;
 			};
 			spi2_rx: spi2-rx {
 				rockchip,pins =

@@ -9,6 +9,7 @@ ccflags-$(CONFIG_SPI_DEBUG) := -DDEBUG
 obj-$(CONFIG_SPI_MASTER)		+= spi.o
 obj-$(CONFIG_SPI_SPIDEV)		+= spidev.o
 
+
 # SPI master controller drivers (bus)
 obj-$(CONFIG_SPI_ALTERA)		+= spi-altera.o
 obj-$(CONFIG_SPI_ATMEL)			+= spi-atmel.o
@@ -99,3 +100,6 @@ spi-wk2xxx-objs                        := spi-wk2xxx_64bit
 else
 spi-wk2xxx-objs                        := spi-wk2xxx_32bit
 endif
+
+#100ask  spidev  lib
+obj-$(CONFIG_SPI_DEV_USER)              += 100ask_spidev.o

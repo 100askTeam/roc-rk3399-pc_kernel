@@ -286,24 +286,25 @@
                         gpio-key,wakeup = <1>;
                         debounce-interval = <100>;
                 };
-		 button@1 {
-                        gpios = <&gpio2 22 GPIO_ACTIVE_LOW>;
-                        linux,code = <KEY_UP>;
-                        debounce-interval = <100>;
-                        gpio-key,wakeup = <1>;
-                };
-                button@2 {
-                        gpios = <&gpio2 25 GPIO_ACTIVE_LOW>;
-                        linux,code = <KEY_DOWN>;
-                        gpio-key,wakeup = <1>;
-                        debounce-interval = <100>;
-                };
-                button@3 {
-                        gpios = <&gpio0 10 GPIO_ACTIVE_LOW>;
-                        linux,code = <KEY_RIGHT>;
-                        gpio-key,wakeup = <1>;
-                        debounce-interval = <100>;
-                };
+		button@1 {
+		        gpios = <&gpio0 9 GPIO_ACTIVE_LOW>;
+		        linux,code = <KEY_LEFT>;
+		        debounce-interval = <100>;
+		        gpio-key,wakeup = <1>;
+		};
+		button@2 {
+		        gpios = <&gpio0 10 GPIO_ACTIVE_LOW>;
+		        linux,code = <KEY_HOME>;
+		        gpio-key,wakeup = <1>;
+		        debounce-interval = <100>;
+		};
+		button@3 {
+        		gpios = <&gpio0 12 GPIO_ACTIVE_LOW>;
+		        linux,code = <KEY_RIGHT>;
+		        gpio-key,wakeup = <1>;
+		        debounce-interval = <100>;
+		};
+
 	};
 
 
@@ -904,8 +905,8 @@
 	buttons {
                 pwrbtn: pwrbtn {
                         rockchip,pins = <0 5  RK_FUNC_GPIO &pcfg_pull_up>,
-                        	        <2 22 RK_FUNC_GPIO &pcfg_pull_up>,
-                        	        <2 25 RK_FUNC_GPIO &pcfg_pull_up>,
+                        	        <0 9 RK_FUNC_GPIO &pcfg_pull_up>,
+                        	        <0 12 RK_FUNC_GPIO &pcfg_pull_up>,
                         	        <0 10 RK_FUNC_GPIO &pcfg_pull_up>;
                 };
         };
@@ -1170,11 +1171,5 @@
 &spi2 {
 	status = "okay";
 	max-freq = <48000000>;
-
-	spidev@0{
-		status = "okay";
-		compatible = "rockchip,spidev";
-		spi-max-frequency = <30000000>;
-		reg = <0x00>;
-	};
+	cs-pin = <0>, <&gpio3 29 0>;
 };

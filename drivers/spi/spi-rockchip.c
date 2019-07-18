@@ -22,6 +22,9 @@
 #include <linux/pm_runtime.h>
 #include <linux/scatterlist.h>
 
+#include <linux/gpio.h>
+#include <linux/of_gpio.h>
+
 #define DRIVER_NAME "rockchip-spi"
 
 /* SPI register offsets */
@@ -144,6 +147,8 @@
 /* max sclk of driver strength 4mA */
 #define IO_DRIVER_4MA_MAX_SCLK_OUT	24000000
 
+static u32 spi2_cs_gpio = 0;
+
 enum rockchip_ssi_type {
 	SSI_MOTO_SPI = 0,
 	SSI_TI_SSP,
@@ -261,34 +266,53 @@ static void rockchip_spi_set_cs(struct spi_device *spi, bool enable)
 {
 	u32 ser;
 	struct spi_master *master = spi->master;
-	struct rockchip_spi *rs = spi_master_get_devdata(master);
+	struct rockchip_spi *rs = spi_master_get_devdata(master);;
 
 	pm_runtime_get_sync(rs->dev);
 
-	ser = readl_relaxed(rs->regs + ROCKCHIP_SPI_SER) & SER_MASK;
+	//100ask add for support spi2 gpio chip selection
+	if (spi2_cs_gpio > 0)
+		gpio_direction_output(spi2_cs_gpio, 1);
+	
+	if (spi->chip_select == 1) //Software chip selection
+	{
+		if (!enable)
+			gpio_direction_output(spi2_cs_gpio, 0);
+		else
+		{
+			gpio_direction_output(spi2_cs_gpio, 1);
 
-	/*
-	 * drivers/spi/spi.c:
-	 * static void spi_set_cs(struct spi_device *spi, bool enable)
-	 * {
-	 *		if (spi->mode & SPI_CS_HIGH)
-	 *			enable = !enable;
-	 *
-	 *		if (spi->cs_gpio >= 0)
-	 *			gpio_set_value(spi->cs_gpio, !enable);
-	 *		else if (spi->master->set_cs)
-	 *		spi->master->set_cs(spi, !enable);
-	 * }
-	 *
-	 * Note: enable(rockchip_spi_set_cs) = !enable(spi_set_cs)
-	 */
-	if (!enable)
-		ser |= 1 << spi->chip_select;
-	else
-		ser &= ~(1 << spi->chip_select);
+			ser = readl_relaxed(rs->regs + ROCKCHIP_SPI_SER) & SER_MASK;
+			ser |= 1 << 1;
+			writel_relaxed(ser, rs->regs + ROCKCHIP_SPI_SER);
+		}
+	}
+	else //Hardware chip selection
+	{
+		ser = readl_relaxed(rs->regs + ROCKCHIP_SPI_SER) & SER_MASK;
 
-	writel_relaxed(ser, rs->regs + ROCKCHIP_SPI_SER);
+		/*
+		 * drivers/spi/spi.c:
+		 * static void spi_set_cs(struct spi_device *spi, bool enable)
+		 * {
+		 *		if (spi->mode & SPI_CS_HIGH)
+		 *			enable = !enable;
+		 *
+		 *		if (spi->cs_gpio >= 0)
+		 *			gpio_set_value(spi->cs_gpio, !enable);
+		 *		else if (spi->master->set_cs)
+		 *		spi->master->set_cs(spi, !enable);
+		 * }
+		 *
+		 * Note: enable(rockchip_spi_set_cs) = !enable(spi_set_cs)
+		 */
+		if (!enable)
+			ser |= 1 << spi->chip_select;
+		else
+			ser &= ~(1 << spi->chip_select);
 
+		writel_relaxed(ser, rs->regs + ROCKCHIP_SPI_SER);
+	}
 	pm_runtime_put_sync(rs->dev);
 }
 
@@ -487,7 +511,7 @@ static int rockchip_spi_prepare_dma(struct rockchip_spi *rs)
 		txdesc->callback = rockchip_spi_dma_txcb;
 		txdesc->callback_param = rs;
 	}
-
+	
 	/* rx must be started before tx due to spi instinct */
 	if (rxdesc) {
 		spin_lock_irqsave(&rs->lock, flags);
@@ -731,6 +755,15 @@ static int rockchip_spi_probe(struct platform_device *pdev)
 		ret = -EINVAL;
 		goto err_get_fifo_len;
 	}
+	//100ask add for support spi2 gpio chip selection
+	spi2_cs_gpio = of_get_named_gpio(pdev->dev.of_node, "cs-pin", 1);	 
+	if (gpio_is_valid(spi2_cs_gpio)) 
+	{
+		if ((gpio_request(spi2_cs_gpio, "spi2_cs_pin")) < 0) //todo: gpio_free
+			printk(KERN_WARNING "Error requesting gpio %d for spi2 cs pin\n", spi2_cs_gpio);
+		else
+			gpio_direction_output(spi2_cs_gpio, 1);
+	}
 
 	spin_lock_init(&rs->lock);
 
@@ -827,6 +860,8 @@ static int rockchip_spi_remove(struct platform_device *pdev)
 		dma_release_channel(rs->dma_rx.ch);
 
 	spi_master_put(master);
+
+	gpio_free(spi2_cs_gpio);
 
 	return 0;
 }
