@@ -288,19 +288,19 @@
                 };
 		button@1 {
 		        gpios = <&gpio0 9 GPIO_ACTIVE_LOW>;
-		        linux,code = <KEY_LEFT>;
+		        linux,code = <KEY_A>;
 		        debounce-interval = <100>;
 		        gpio-key,wakeup = <1>;
 		};
 		button@2 {
 		        gpios = <&gpio0 10 GPIO_ACTIVE_LOW>;
-		        linux,code = <KEY_HOME>;
+		        linux,code = <KEY_B>;
 		        gpio-key,wakeup = <1>;
 		        debounce-interval = <100>;
 		};
 		button@3 {
         		gpios = <&gpio0 12 GPIO_ACTIVE_LOW>;
-		        linux,code = <KEY_RIGHT>;
+		        linux,code = <KEY_C>;
 		        gpio-key,wakeup = <1>;
 		        debounce-interval = <100>;
 		};
