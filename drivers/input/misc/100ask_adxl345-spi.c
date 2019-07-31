@@ -7,7 +7,7 @@
 #include <linux/cdev.h>
 
 #include <linux/delay.h>
-
+#include <linux/interrupt.h>
 #include <linux/spi/spi.h>
 #include <linux/pm.h>
 #include <linux/types.h>
@@ -242,7 +242,7 @@ static long  adxl34x_ioctl (struct file *filp, unsigned int cmd, unsigned long a
 			printk(KERN_ERR "ADXL34X_IOCEXIT: copy_from_user() fail.\n");
 			return -EINVAL;
 		}
-
+		free_irq(gpio_to_irq(ad_info_msg.irq_pin), NULL);
 		gpio_free(ad_info_msg.irq_pin);
 
 		spi_slave_info[ad_info_msg.chip_select].chip_select = ad_info_msg.chip_select;
